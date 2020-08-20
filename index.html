@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="de" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Faceit Stats Checker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" charset="utf-8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js" charset="utf-8"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script>
+    let players = [];
+    let singlePlayer;
+    let nickname;
+    let playerID;
+    let games;
+    let target = 100;
+
+    function getFaceitStats() {
+      singlePlayer = [];
+      nickname = '';
+      playerID = '';
+      games = [];
+
+      nickname = $('#nnInput').val();
+      let this_url = `https://open.faceit.com/data/v4/players?nickname=${nickname}`;
+      $.ajax({
+        url: this_url,
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Authorization", "Bearer c79a0cbf-3164-44d1-9568-8970987724f3")
+        },
+        success: function(data) {
+          playerID = data.player_id;
+          getGamesOfPlayer(playerID);
+        }
+      });
+    }
+
+    function getGamesOfPlayer(playerID) {
+      let this_url = `https://open.faceit.com/data/v4/players/${playerID}/history?game=csgo&from=1356994800&limit=100`;
+      $.ajax({
+        url: this_url,
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Authorization", "Bearer c79a0cbf-3164-44d1-9568-8970987724f3")
+        },
+        success: function(data) {
+          for (let i of data.items) {
+            games.push({
+              "id": i.match_id,
+              "finishedAt": i.finished_at
+            });
+          }
+          getStatsOfGame(games);
+        }
+      });
+    }
+
+    function getStatsOfGame(games) {
+      let gameCounter = 0;
+      let until = games.length;
+      for (let v of games) {
+        let this_url = `https://open.faceit.com/data/v4/matches/${v.id}/stats`;
+        $.ajax({
+          url: this_url,
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer c79a0cbf-3164-44d1-9568-8970987724f3")
+          },
+          success: function(data) {
+            gameCounter++;
+            let players_0 = data.rounds[0].teams[0].players;
+            let players_1 = data.rounds[0].teams[1].players;
+            let player;
+            let found = false;
+            for (let p of players_0) {
+              if (p.player_id == playerID) {
+                player = p;
+                found = true;
+              }
+            }
+            for (let p of players_1) {
+              if (p.player_id == playerID) {
+                player = p;
+                found = true;
+              }
+            }
+            if (!found) {
+              player = {};
+            }
+            if (player.hasOwnProperty('player_stats')) {
+              let a = {
+                matchID: v,
+                player: player
+              };
+              singlePlayer.push(a);
+            }
+            if (gameCounter == until) {
+              prepareData();
+            }
+          },
+          error: function() {
+            console.log("Error occured: No gamedata found");
+            gameCounter++;
+          }
+        });
+      }
+    }
+
+    function prepareData() {
+      let unsorted = singlePlayer;
+      let finNumbers = [];
+      for (let e of unsorted) {
+        finNumbers.push(e.matchID.finishedAt);
+      }
+      let sorted = bubbleSort(finNumbers);
+      let statsSorted = [];
+      for (let i = 0; i < sorted.length; i++) {
+        let time = sorted[i];
+        for (let j = 0; j < singlePlayer.length; j++) {
+          if (time == singlePlayer[j].matchID.finishedAt) {
+            statsSorted.push(singlePlayer[j]);
+          }
+        }
+      }
+      players.push({
+        "nickname": nickname,
+        "stats": statsSorted
+      });
+      console.log(players);
+      console.log(players.length - 1);
+      $('#playersSelect').append($('<option>', {
+        value: players.length - 1,
+        text: nickname
+      }));
+      alert("Data arrived!");
+      $('#nnInput').val('');
+      $('#addDataButton').prop('disabled', false);
+    }
+
+    function bubbleSort(array) {
+      for (let n = array.length; n > 1; n--) {
+        for (let i = 0; i < n - 1; i++) {
+          if (array[i] > array[i + 1]) {
+            let i1 = array[i + 1];
+            array[i + 1] = array[i];
+            array[i] = i1;
+          }
+        }
+      }
+      return array;
+    }
+
+    function prepareLabels(targetCount) {
+      let result = [];
+      for (let i = 1; i <= targetCount; i++) {
+        result.push(i);
+      }
+      return result;
+    }
+
+    function getMyDataForChart(index, category) {
+      let res = [];
+      for (let j = 0; j < players[index].stats.length; j++) {
+        res.push(players[index].stats[j].player.player_stats[category]);
+      }
+      return res;
+    }
+
+    function averageThis(dat) {
+      let averagedData = [];
+      for (let i = 7; i < dat.length; i++) {
+        let r = parseInt(dat[i - 7]);
+        let t = parseInt(dat[i - 6]);
+        let a = parseInt(dat[i - 5]);
+        let b = parseInt(dat[i - 4]);
+        let c = parseInt(dat[i - 3]);
+        let d = parseInt(dat[i - 2]);
+        let e = parseInt(dat[i - 1]);
+        let singleData = (r + t + a + b + c + d + e) / 7;
+        averagedData.push(singleData);
+      }
+      return averagedData;
+    }
+  </script>
+</head>
+
+<body>
+  <h1 class="h1">Faceit Stats Checker</h1>
+  <div class="playerSearch">
+    <input type="text" placeholder="Faceit Nickname" id="nnInput">
+    <input type="button" value="Get Faceit Stats" onclick="getFaceitStats()">
+  </div>
+  <hr>
+  <div class="addDataSection">
+    <input type="button" id="addDataButton" value="Add Dataset" onclick="addDataToGraph()" disabled>
+    <select name="playersSelect" id="playersSelect">
+    </select>
+    <select name="categories" id="categories">
+      <option value="Kills">Kills</option>
+      <option value="Deaths">Deaths</option>
+      <option value="Headshots %">Headshots %</option>
+      <option value="K/D Ratio">K/D Ratio</option>
+      <option value="K/R Ratio">K/R Ratio</option>
+      <option value="MVPs">MVPs</option>
+    </select>
+    <input id="average" type="radio" name="average" value="average">
+    <label for="average">Moving Average</label>
+    <input id="raw" type="radio" name="average" value="raw" checked="true">
+    <label for="average">Raw Data</label>
+  </div>
+  <hr>
+  <div class="chart">
+    <canvas id="myChart" width="1200"></canvas>
+  </div>
+
+  <script>
+    let ctx = $('#myChart');
+    let myLineChart;
+    let config = {
+      type: 'line',
+      data: {
+        labels: prepareLabels(100),
+        datasets: []
+      },
+      options: {
+        responsive: false,
+        scales: {
+          xAxes: [{
+            display: false //this will remove all the x-axis grid lines
+          }]
+        }
+      }
+    };
+
+    window.onload = function() {
+      myLineChart = new Chart(ctx, config);
+    }
+
+    let myColors = ['#69a2ff', '#69ffa7', '#ff6969', '#ff69f5', '#b669ff'];
+
+    function addDataToGraph() {
+      let labels = prepareLabels(100);
+      let cat = $('#categories option:selected').text();
+      let pIndex = $('#playersSelect option:selected').val();
+      let myData = getMyDataForChart(pIndex, cat);
+      let isAv = false;
+      if ($('#average').is(':checked')) {
+        myData = averageThis(myData);
+        isAv = true;
+      }
+      let myLabel = '';
+      if (isAv) {
+        myLabel = `${players[pIndex].nickname} ${cat} Averaged`;
+      } else {
+        myLabel = `${players[pIndex].nickname} ${cat} Raw`;
+      }
+      let myColor = myColors[pIndex];
+      let newDataset = {
+        label: myLabel,
+        backgroundColor: myColor,
+        borderColor: myColor,
+        data: myData,
+        fill: false
+      };
+      config.data.datasets.push(newDataset);
+      myLineChart.update();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+* {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.playerSearch {
+  text-align: center;
+}
+
+.playerSearch input {
+  margin: 10px;
+}
+
+.addDataSection input {
+  margin: 10px;
+}
+
+
+.addDataSection {
+  text-align: center;
+}
+
+#myChart {
+  margin: 0 auto;
+}
+
+.h1 {
+  text-align: center;
+}
