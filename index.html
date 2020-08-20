@@ -168,13 +168,13 @@
     function averageThis(dat) {
       let averagedData = [];
       for (let i = 7; i < dat.length; i++) {
-        let r = parseInt(dat[i - 7]);
-        let t = parseInt(dat[i - 6]);
-        let a = parseInt(dat[i - 5]);
-        let b = parseInt(dat[i - 4]);
-        let c = parseInt(dat[i - 3]);
-        let d = parseInt(dat[i - 2]);
-        let e = parseInt(dat[i - 1]);
+        let r = parseFloat(dat[i - 7]);
+        let t = parseFloat(dat[i - 6]);
+        let a = parseFloat(dat[i - 5]);
+        let b = parseFloat(dat[i - 4]);
+        let c = parseFloat(dat[i - 3]);
+        let d = parseFloat(dat[i - 2]);
+        let e = parseFloat(dat[i - 1]);
         let singleData = (r + t + a + b + c + d + e) / 7;
         averagedData.push(singleData);
       }
