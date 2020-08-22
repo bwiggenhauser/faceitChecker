@@ -14,7 +14,6 @@
   margin: 10px;
 }
 
-
 .addDataSection {
   text-align: center;
 }
@@ -25,4 +24,32 @@
 
 .h1 {
   text-align: center;
+}
+
+#numberComparison {
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: collapse;
+  width: 80%;
+}
+
+#numberComparison td, #numberComparison th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#numberComparison tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+ #numberComparison tr:hover {
+  background-color: #ddd;
+}
+
+#numberComparison th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
 }

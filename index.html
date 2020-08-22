@@ -134,6 +134,51 @@
       alert("Data arrived!");
       $('#nnInput').val('');
       $('#addDataButton').prop('disabled', false);
+      addTableContent(players.length - 1);
+    }
+
+    function addTableContent(index) {
+      let c = players[index];
+      let playername = c.nickname;
+      let kills = 0;
+      let assists = 0;
+      let deaths = 0;
+      let headshots = 0;
+      let kd = 0;
+      let kr = 0;
+      let mvps = 0;
+      let triples = 0;
+      let quadros = 0;
+      let pentas = 0;
+
+      console.log(c);
+      console.log(c.stats.length);
+      for (let i = 0; i < c.stats.length; i++) {
+        kills += parseFloat(c.stats[i].player.player_stats.Kills);
+        assists += parseFloat(c.stats[i].player.player_stats.Assists);
+        deaths += parseFloat(c.stats[i].player.player_stats.Deaths);
+        headshots += parseFloat(c.stats[i].player.player_stats["Headshots %"]);
+        kd += parseFloat(c.stats[i].player.player_stats["K/D Ratio"]);
+        kr += parseFloat(c.stats[i].player.player_stats["K/R Ratio"]);
+        mvps += parseFloat(c.stats[i].player.player_stats.MVPs);
+        triples += parseFloat(c.stats[i].player.player_stats["Triple Kills"]);
+        quadros += parseFloat(c.stats[i].player.player_stats["Quadro Kills"]);
+        pentas += parseFloat(c.stats[i].player.player_stats["Penta Kills"]);
+      }
+      let k = c.stats.length;
+      $('#numberComparison').append(`<tr>
+        <td>${playername}</td>
+        <td>${Math.round((kills/k) * 100) / 100}</td>
+        <td>${Math.round((assists/k) * 100) / 100}</td>
+        <td>${Math.round((deaths/k) * 100) / 100}</td>
+        <td>${Math.round((headshots/k) * 100) / 100}</td>
+        <td>${Math.round((kd/k) * 100) / 100}</td>
+        <td>${Math.round((kr/k) * 100) / 100}</td>
+        <td>${Math.round((mvps/k) * 100) / 100}</td>
+        <td>${Math.round((triples/k) * 100) / 100}</td>
+        <td>${Math.round((quadros/k) * 100) / 100}</td>
+        <td>${Math.round((pentas/k) * 100) / 100}</td>
+        </tr>`);
     }
 
     function bubbleSort(array) {
@@ -209,7 +254,26 @@
   </div>
   <hr>
   <div class="chart">
-    <canvas id="myChart" width="1200"></canvas>
+    <canvas id="myChart" width="1000"></canvas>
+  </div>
+  <hr>
+  <div>
+    <h2 class="h1">Performance Comparison over the last 100 Faceit matches</h2>
+    <table id="numberComparison">
+      <tr>
+        <th>Player</th>
+        <th>Average Kills</th>
+        <th>Average Assists</th>
+        <th>Average Deaths</th>
+        <th>Average Headshot %</th>
+        <th>Average K/D Ratio</th>
+        <th>Average K/R Ratio</th>
+        <th>Average MVPs</th>
+        <th>Average Triple Kills</th>
+        <th>Average Quadro Kills</th>
+        <th>Average Penta Kills</th>
+      </tr>
+    </table>
   </div>
 
   <script>
