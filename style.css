@@ -30,7 +30,7 @@
   margin-left: auto;
   margin-right: auto;
   border-collapse: collapse;
-  width: 80%;
+  width: 90%;
 }
 
 #numberComparison td, #numberComparison th {
@@ -43,13 +43,17 @@
 }
 
  #numberComparison tr:hover {
-  background-color: #ddd;
+  background-color: #48bd67;
 }
 
 #numberComparison th {
   padding-top: 12px;
   padding-bottom: 12px;
-  text-align: left;
-  background-color: #4CAF50;
+  text-align: center;
+  background-color: #508bad;
   color: white;
+}
+
+#numberComparison td {
+  text-align: center;
 }

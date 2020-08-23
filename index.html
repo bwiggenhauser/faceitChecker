@@ -178,6 +178,7 @@
         <td>${Math.round((triples/k) * 100) / 100}</td>
         <td>${Math.round((quadros/k) * 100) / 100}</td>
         <td>${Math.round((pentas/k) * 100) / 100}</td>
+        <td>${kills-deaths}</td>
         </tr>`);
     }
 
@@ -210,20 +211,22 @@
       return res;
     }
 
-    function averageThis(dat) {
+    function averageThis(dat, smoothing) {
       let averagedData = [];
-      for (let i = 7; i < dat.length; i++) {
-        let r = parseFloat(dat[i - 7]);
-        let t = parseFloat(dat[i - 6]);
-        let a = parseFloat(dat[i - 5]);
-        let b = parseFloat(dat[i - 4]);
-        let c = parseFloat(dat[i - 3]);
-        let d = parseFloat(dat[i - 2]);
-        let e = parseFloat(dat[i - 1]);
-        let singleData = (r + t + a + b + c + d + e) / 7;
-        averagedData.push(singleData);
+      let sm = parseFloat(smoothing);
+      if (sm == 1) {
+        console.log("1 erkannt");
+        return dat;
+      } else {
+        for (let i = 0; i <= dat.length - sm; i++) {
+          let sum = 0;
+          for (let j = i; j < i + sm; j++) {
+            sum += parseFloat(dat[j]);
+          }
+          averagedData.push(sum / sm);
+        }
+        return averagedData;
       }
-      return averagedData;
     }
   </script>
 </head>
@@ -247,10 +250,19 @@
       <option value="K/R Ratio">K/R Ratio</option>
       <option value="MVPs">MVPs</option>
     </select>
-    <input id="average" type="radio" name="average" value="average">
-    <label for="average">Moving Average</label>
-    <input id="raw" type="radio" name="average" value="raw" checked="true">
-    <label for="average">Raw Data</label>
+    <select id="smoothing">
+      <option value="1">Raw</option>
+      <option value="2">2x Smoothing</option>
+      <option value="4">4x Smoothing</option>
+      <option value="6">6x Smoothing</option>
+      <option value="8">8x Smoothing</option>
+      <option value="10">10x Smoothing</option>
+      <option value="12">12x Smoothing</option>
+      <option value="14">14x Smoothing</option>
+      <option value="16">16x Smoothing</option>
+      <option value="18">18x Smoothing</option>
+      <option value="20">20x Smoothing</option>
+    </select>
   </div>
   <hr>
   <div class="chart">
@@ -272,6 +284,7 @@
         <th>Average Triple Kills</th>
         <th>Average Quadro Kills</th>
         <th>Average Penta Kills</th>
+        <th>Kills - Deaths</th>
       </tr>
     </table>
   </div>
@@ -306,17 +319,10 @@
       let cat = $('#categories option:selected').text();
       let pIndex = $('#playersSelect option:selected').val();
       let myData = getMyDataForChart(pIndex, cat);
-      let isAv = false;
-      if ($('#average').is(':checked')) {
-        myData = averageThis(myData);
-        isAv = true;
-      }
-      let myLabel = '';
-      if (isAv) {
-        myLabel = `${players[pIndex].nickname} ${cat} Averaged`;
-      } else {
-        myLabel = `${players[pIndex].nickname} ${cat} Raw`;
-      }
+      let smoothingIdx = $('#smoothing option:selected').val();
+      let smoothingText = $('#smoothing option:selected').text();
+      myData = averageThis(myData, smoothingIdx);
+      let myLabel = `${players[pIndex].nickname} ${cat} ${smoothingText}`;
       let myColor = myColors[pIndex];
       let newDataset = {
         label: myLabel,
